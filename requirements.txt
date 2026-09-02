@@ -1,7 +1,4 @@
 streamlit
 langchain
-langchain-community
-langchain-text-splitters
 chromadb
 qrcode
-from langchain_text_splitters import RecursiveCharacterTextSplitter
