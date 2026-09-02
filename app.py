@@ -12,7 +12,7 @@ st.set_page_config(
     page_icon="👑",
     layout="centered"
 # Дизайни босифат ва махсус бо CSS
-st.markdown("""
+st.markdown(""")
     <style>
     .main {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
