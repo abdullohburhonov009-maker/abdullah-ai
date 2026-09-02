@@ -90,7 +90,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if user_query := st.chat_input("Масалан: Ман Абдуллоҳ ҳастам / Ман Али ҳастам / ё савол дар бораи китоб..."):
+if user_query := st.chat_input(салом ман Abdulloh AI хастам чи савол доред..."):
     st.session_state.messages.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
         st.markdown(user_query)
