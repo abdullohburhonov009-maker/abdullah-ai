@@ -1,4 +1,6 @@
 streamlit
 langchain
+langchain-community
 chromadb
 qrcode
+pypdf
