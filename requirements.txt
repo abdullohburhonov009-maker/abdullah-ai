@@ -4,4 +4,4 @@ langchain-community
 langchain-text-splitters
 chromadb
 qrcode
-pypdf
+langchain_text_splitters
