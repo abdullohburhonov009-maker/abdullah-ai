@@ -8,11 +8,9 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 
 # Танзимоти саҳифа бо тарҳи замонавӣ ва шоҳона
 st.set_page_config(
-    page_title="Abdullah & Haydar AI — Қаламрави Раис Абдуллоҳ",
+    page_title="Abdullah AI — Зеҳни Сунъии Шахсӣ",
     page_icon="👑",
     layout="centered"
-)
-
 # Дизайни босифат ва махсус бо CSS
 st.markdown("""
     <style>
