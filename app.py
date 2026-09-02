@@ -88,4 +88,4 @@ network_url = f"http://{local_ip}:8501"
 img = qrcode.make(network_url)
 buf = BytesIO()
 img.save(buf)
-st.sidebar.image(buf.getvalue(), caption=f"Суроға: {network_url}", use_column_width=True)
+st.sidebar.image(buf.getvalue(), caption="Сурат: QR-код")
