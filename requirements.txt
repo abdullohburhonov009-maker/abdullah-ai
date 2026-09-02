@@ -1,7 +1,8 @@
 streamlit
+qrcode
+pypdf
 langchain
 langchain-community
 langchain-text-splitters
 chromadb
-qrcode
-pypdf
+sentence-transformers
