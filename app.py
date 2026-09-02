@@ -1,44 +1,52 @@
 import io
+import os
+import qrcode
+import streamlit as st
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import pypdf
-import qrcode
-import streamlit as st
+from pypdf import PdfReader
 
+# Танзимоти саҳифа
 st.set_page_config(
-    page_title="Abdullah AI — Next Gen Intelligence",
+    page_title="Abdullah AI — Multi-Library Intelligence",
     page_icon="⚡",
     layout="wide",
 )
 
+# Дизайни боҳашамат (Gemini & Huawei style UI)
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    
     .stApp {
         background: linear-gradient(135deg, #050508 0%, #0e1117 50%, #161b22 100%);
         font-family: 'Inter', sans-serif;
         color: #f0f6fc;
     }
+    
     .hero-title {
         text-align: center;
-        font-size: 3.5rem;
+        font-size: 3.2rem;
         font-weight: 700;
         background: linear-gradient(90deg, #00ffa3, #00b4d8, #7928ca);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0px;
     }
+    
     .hero-subtitle {
         text-align: center;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         color: #8b949e;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
+        font-weight: 300;
     }
+
     .glass-card {
-        background: rgba(22, 27, 34, 0.7);
-        backdrop-filter: blur(12px);
+        background: rgba(22, 27, 34, 0.75);
+        backdrop-filter: blur(14px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 16px;
         padding: 24px;
@@ -50,11 +58,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Панели канори бо QR Код
 with st.sidebar:
   st.markdown("### 🌐 Панели Идоракунӣ")
   st.info(
-      "**Abdullah AI v3.0**\n\nСистемаи зеҳни сунъӣ бо қобилияти таҳлили"
-      " ҳуҷҷатҳо."
+      "**Abdullah AI v5.0**\n\nСистемаи дастгирии ҳамзамони чанд китоб ва ҳуҷҷат."
   )
   st.write("---")
   st.subheader("📱 QR Коди Барнома")
@@ -68,70 +76,99 @@ with st.sidebar:
     img = qr.make_image(fill_color="black", back_color="white")
     buf = io.BytesIO()
     img.save(buf, format="PNG")
-    st.image(buf.getvalue(), caption="Скан кунед!", width=200)
+    st.image(buf.getvalue(), caption="Скан кунед ва дар телефон кушоед!", width=200)
 
+# Сарлавҳаи асосӣ
 st.markdown(
     "<h1 class='hero-title'>Abdullah AI</h1>", unsafe_allow_html=True
 )
 st.markdown(
-    "<p class='hero-subtitle'>Зеҳни Сунъии Насли Нав • Сохташуда бо дасти Раис"
-    " Абдуллоҳ</p>",
+    "<p class='hero-subtitle'>Зеҳни Сунъии кушодаи чандкитоба • Сохташуда бо дасти"
+    " Раис Абдуллоҳ</p>",
     unsafe_allow_html=True,
 )
 
-# Қисми боркунии PDF ва омодасозии пойгоҳи дониш
+# 1. Қисми боркунии чанд китоб ҳамзамон (Multi-PDF Hub)
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-st.subheader("📂 Бор кардани китоб ё ҳуҷҷат (PDF Hub)")
-uploaded_file = st.file_uploader(
-    "Файли PDF-ро инҷо партоед:", type=["pdf"]
+st.subheader("📂 1. Боркунии якбораи чанд Китоб ё Ҳуҷҷат")
+st.write(
+    "Метавонед якбора якчанд файли PDF-ро аз компютер интихоб карда партоед"
+    " (система ҳамаашро якҷоя мехонад):"
+)
+
+# Илова шудани accept_multiple_files=True барои қабули чанд файл ҳамзамон
+uploaded_files = st.file_uploader(
+    "Файлҳои PDF-ро инҷо интихоб кунед:", type=["pdf"], accept_multiple_files=True
 )
 
 vectorstore = None
-if uploaded_file is not None:
-  with st.spinner("Китоб истодааст, ки таҳлил шавад... Лутфан каме сабр кунед."):
-    reader = pypdf.PdfReader(uploaded_file)
-    text = ""
-    for page in reader.pages:
-      text += page.extract_text() or ""
+if uploaded_files:
+  with st.spinner(
+      "⚡ Китобҳо бо суръати баланд хонда ва индекс шуда истодаанд..."
+  ):
+    all_texts = []
+    total_pages = 0
 
-    # Қисм-қисм кардани матн барои модел
+    # Давра барои хондани ҳар як файли боршуда
+    for uploaded_file in uploaded_files:
+      reader = PdfReader(uploaded_file)
+      total_pages += len(reader.pages)
+      file_text = ""
+      for i, page in enumerate(reader.pages):
+        page_text = page.extract_text()
+        if page_text:
+          file_text += f"\n[Китоб: {uploaded_file.name} | Саҳифа {i+1}]\n" + page_text
+      all_texts.append(file_text)
+
+    combined_text = "\n".join(all_texts)
+
+    # Қисм-қисм кардани матни ҳамаи китобҳо
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500, chunk_overlap=50
+        chunk_size=600, chunk_overlap=80
     )
-    docs = text_splitter.split_text(text)
+    docs = text_splitter.split_text(combined_text)
 
-    # Сохтани векторҳо барои дарёфти ҷавоб
+    # Сохтани хотираи векторӣ барои ҳамаи китобҳо якҷоя
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
     vectorstore = Chroma.from_texts(docs, embeddings)
+
     st.success(
-        f"🎉 Китоб бомуваффақият хонда шуд! Шумораи саҳифаҳо:"
-        f" {len(reader.pages)}. Акнун савол диҳед!"
+        f"🎉 Ҳамаи китобҳо ({len(uploaded_files)} адад) бомуваффақият хонда"
+        f" шуданд! Шумораи умумии саҳифаҳо: {total_pages}. Акнун модел омодаи"
+        " ҷавоб додан аст!"
     )
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Қисми саволу ҷавоб аз китоб
+# 2. Қисми саволу ҷавоб аз байни ҳамаи китобҳо
 st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-st.subheader("💬 Пурсиш аз мундариҷаи китоб")
+st.subheader("💬 2. Пурсиш аз маҷмӯи китобҳо (Мисли тир)")
 user_query = st.text_input(
-    "Саволи худро дар бораи китоби боршуда нависед:",
-    placeholder="Масалан: Дар ин китоб дар бораи чӣ гап меравад?",
+    "Саволи худро дар бораи китобҳои боршуда нависед:",
+    placeholder="Масалан: Дар байни ин китобҳо дар бораи фалон мавзӯъ чӣ гуфта"
+    " шудааст?",
 )
 
 if user_query:
   if vectorstore is not None:
-    with st.spinner("Abdullah AI ҷавоб меҷӯяд..."):
-      # Ёфтани қисми мувофиқи матн дар китоб
-      results = vectorstore.similarity_search(user_query, k=3)
-      context = "\n".join([doc.page_content for doc in results])
+    with st.spinner("🤖 Abdullah AI дар байни китобҳо мегардад..."):
+      # Ҷустуҷӯи фаврӣ дар байни ҳамаи китобҳо
+      results = vectorstore.similarity_search(user_query, k=4)
+      context_text = "\n\n".join([doc.page_content for doc in results])
 
       st.markdown("---")
-      st.success(f"**Саволи шумо:** {user_query}")
-      st.markdown("### 🤖 Ҷавоби Abdullah AI аз китоб:")
-      st.write(
-          f"Дар асоси маводи китоби боршуда, маълумоти зерин ёфт шуд:\n\n{context}"
+      st.markdown(f"**❓ Саволи шумо:** {user_query}")
+      st.markdown("### ⚡ Ҷавоби фаврии Abdullah AI аз китобҳо:")
+
+      st.info(
+          "Дар асоси таҳлили китобҳои боршуда, маълумоти марбута чунин"
+          f" аст:\n\n{context_text}"
       )
+      st.success("✨ Ҷавоб бо суръати баланд аз маҷмӯи китобҳо ёфт шуд!")
   else:
-    st.warning("⚠️ Аввал дар боло файли PDF-ро бор кунед, то аз он савол кунем!")
+    st.warning(
+        "⚠️ Лутфан аввал дар боло файлҳои PDF-ро бор кунед, то система онҳоро"
+        " бихонад!"
+    )
 st.markdown("</div>", unsafe_allow_html=True)
